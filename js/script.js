@@ -1,4 +1,4 @@
-(function () {
+/*(function () {
   let field = {
     w: 640,
     h: 480,
@@ -239,4 +239,165 @@
         break;
    }
   });
+})();*/
+(function () {
+
+  function GetIO(width, height) {
+    const canvas = document.getElementById("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const IO = {
+      _ctx: canvas.getContext("2d"),
+
+      _DrawPacman(size, color, x, y) {
+        this._ctx.beginPath();
+        this._ctx.fillStyle = color;
+        this._ctx.arc(x, y, size, 0.85* Math.PI, 1.9* Math.PI);
+        this._ctx.fill();
+        this._ctx.beginPath();
+        this._ctx.fillStyle = color;
+        this._ctx.arc(x, y, size, 0.15* Math.PI, 1.1* Math.PI);
+        this._ctx.fill();
+      },
+
+      _DrawFood (value, color, x, y, w, h) {
+        this._ctx.fillStyle = color;
+        this._ctx.fillRect( x + w  - (value - 1)*(-1) / 2,
+                            y + h - (value - 1)*(-1) / 2, 
+                            (value - 3)*(-1),
+                            (value - 3)*(-1));
+      },
+
+      _DrawBrick(value, keys, color, x, y, w, h) {
+        this._ctx.fillStyle = color;
+        this._ctx.fillRect( x + keys[0][value - 1] * w,
+                            y + keys[1][value - 1] * h,
+                            w * keys[2][value - 1],
+                            h * keys[3][value - 1]);
+      },
+
+      _DrawCell(data, value, i, j) {
+        let x = data.x + i * data.cell.halfWidth * 2;
+        let y = data.y + j * data.cell.halfHeight * 2;
+        let w = data.cell.halfWidth;
+        let h = data.cell.halfHeight;
+        if (value > 0) {
+          this._DrawBrick(value, data.keys, data.color.wall, x, y, w, h)
+        }
+        else if (value != -9) {
+          this._DrawFood(value, data.color.food, x, y, w, h);
+        }
+        else {
+          this._DrawPacman(data.pacman.size, data.pacman.color, x + w, y + h);
+        }
+      },
+
+      _SplitDraw(text, size, s, color, x, y, delta) {
+        this._ctx.fillStyle = color;
+        this._ctx.textAlign = "center";
+        let fontArgs = this._ctx.font.split(' ');
+        this._ctx.font = "bold " + size + "px" + ' ' +  fontArgs[fontArgs.length - 1];
+        let textArr = text.split(s);
+        for (let i = 0; i < textArr.length; ++i) {
+          this._ctx.fillText(textArr[i], x, y + i * delta);
+        }
+      },
+
+      _AddLeadingZeros :function (num, totalLength) {
+        return String(num).padStart(totalLength, '0');
+      },
+
+      DrawField(data) {
+        this._ctx.fillStyle = data.color.background;
+        this._ctx.fillRect(0, 0, data.width, data.height);
+        for (let j = 0; j < data.map.length; ++j) {
+          for (let i = 0; i < data.map[j].length; ++i) {
+            this._DrawCell(data, data.map[j][i], i, j);
+          }
+        }
+      },
+
+      _DrawScore(data) {
+     
+      },
+
+      _DrawLives(lives) {
+        for (let i = 0; i < lives.count; ++i) {
+          this._DrawPacman(lives.size, lives.color, lives.x, lives.y + i * lives.leading);
+        }
+      },
+
+      _DrawGhost(data) {
+     
+      },
+
+      DrawLeftSidebar(sidebar, pacman) {
+        this._SplitDraw(this._AddLeadingZeros(sidebar.text, sidebar.length),
+                        sidebar.size, " ", sidebar.color.text,
+                        sidebar.x, sidebar.y, sidebar.leading);
+        this._SplitDraw(this._AddLeadingZeros(sidebar.value, sidebar.length),
+                        sidebar.size, "", sidebar.color.value,
+                        sidebar.x, sidebar.y + sidebar.textBottomMargin, sidebar.leading);
+        this._DrawLives(sidebar.lives);
+      },
+
+      DrawRightSidebar(sidebar) {
+        this._SplitDraw(this._AddLeadingZeros(sidebar.text, sidebar.length),
+                        sidebar.size, " ", sidebar.color.text,
+                        sidebar.x, sidebar.y, sidebar.leading);
+        this._SplitDraw(this._AddLeadingZeros(sidebar.value, sidebar.length),
+                        sidebar.size, "", sidebar.color.value,
+                        sidebar.x, sidebar.y + sidebar.textBottomMargin, sidebar.leading);
+      },
+
+      Draw(data) {
+        this.DrawField(data);
+        this.DrawLeftSidebar(data.leftSidebar, data.pacman);
+        this.DrawRightSidebar(data.rightSidebar);
+      }
+    };
+    return IO;
+  }
+
+
+  const game = {
+    _data: null,
+    _IO: null,
+    _pacman: {
+      _EnablePacmanControl() {
+        document.addEventListener('keydown', (e) => {
+          const keyName = e.code;
+      })
+    }
+    },
+    Initialize(IO, data) {
+      this._IO = IO;
+      this._data = data;
+    },
+    IsInitialized() {
+      return (this._IO != null) & (this._data != null) ? true : false;
+    },
+    Start() {
+      if(this.IsInitialized()) {
+        this._IO.Draw(this._data);
+      }
+      else console.log("Game is not initialized!");
+    },
+    Pause() {
+      if(this.IsInitialized()) {
+
+      }
+      else console.log("Game is not initialized!");
+    },
+    Reset() {
+      if(this.IsInitialized()) {
+
+      }
+      else console.log("Game is not initialized!");
+    }
+  }
+
+  let data = GetDataFromLocalJS();
+  game.Initialize(GetIO(data.width, data.height), data);
+  game.Start();
 })();
