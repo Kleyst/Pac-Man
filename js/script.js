@@ -310,11 +310,39 @@
       DrawField(data) {
         this._ctx.fillStyle = data.color.background;
         this._ctx.fillRect(0, 0, data.width, data.height);
+
         for (let j = 0; j < data.map.length; ++j) {
           for (let i = 0; i < data.map[j].length; ++i) {
             this._DrawCell(data, data.map[j][i], i, j);
           }
         }
+/*
+        this._ctx.beginPath();
+        this._ctx.fillStyle="yellow";
+        this._ctx.arc(210, 80, 50, 0, Math.PI*2, true);
+        this._ctx.fill();
+        this._ctx.save();
+
+        setTimeout(() => {  console.log("World!"); }, 2000);
+
+        this._ctx.beginPath();
+        this._ctx.fillStyle="red";
+        this._ctx.arc(10, 80, 50, 0, Math.PI*2, true);
+        this._ctx.fill();
+
+        setTimeout(() => {  console.log("World!"); }, 2000);
+
+
+        this._ctx.restore();
+/*
+        function restore (x) {
+          x.fillStyle = "black";
+          x.fillRect(1, 1, 200, 200);
+          x;
+          console.log(x);
+        };
+        setTimeout(restore, 500, this._ctx);*/
+
       },
 
       _DrawScore(data) {
@@ -359,16 +387,13 @@
     return IO;
   }
 
-
   const game = {
     _data: null,
     _IO: null,
     _pacman: {
-      _EnablePacmanControl() {
-        document.addEventListener('keydown', (e) => {
-          const keyName = e.code;
-      })
-    }
+      _Start() {
+
+      }
     },
     Initialize(IO, data) {
       this._IO = IO;
@@ -396,7 +421,6 @@
       else console.log("Game is not initialized!");
     }
   }
-
   let data = GetDataFromLocalJS();
   game.Initialize(GetIO(data.width, data.height), data);
   game.Start();
