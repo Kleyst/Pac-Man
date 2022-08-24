@@ -242,38 +242,43 @@
 })();*/
 (function () {
 
-  function GetIO(width, height) {
-    const canvas = document.getElementById("canvas");
-    canvas.width = width;
-    canvas.height = height;
+  function GetIO(id, width, height) {
     const IO = {
-      _ctx: canvas.getContext("2d"),
+      _stage: null,
+      _layerField: null,
 
       _DrawPacman(size, color, x, y) {
-        this._ctx.beginPath();
-        this._ctx.fillStyle = color;
-        this._ctx.arc(x, y, size, 0.85* Math.PI, 1.9* Math.PI);
-        this._ctx.fill();
-        this._ctx.beginPath();
-        this._ctx.fillStyle = color;
-        this._ctx.arc(x, y, size, 0.15* Math.PI, 1.1* Math.PI);
-        this._ctx.fill();
+        var arc = new Konva.Arc({
+          x: x,
+          y: y,
+          outerRadius: 10,
+          angle: 320,
+          rotation: 20,
+          fill: color,
+        });
+        this._layerField.add(arc);
       },
 
       _DrawFood (value, color, x, y, w, h) {
-        this._ctx.fillStyle = color;
-        this._ctx.fillRect( x + w  - (value - 1)*(-1) / 2,
-                            y + h - (value - 1)*(-1) / 2, 
-                            (value - 3)*(-1),
-                            (value - 3)*(-1));
+        let food = new Konva.Rect({
+          x: x + w - (value - 1)*(-1) / 2,
+          y: y + h - (value - 1)*(-1) / 2,
+          width: (value - 3)*(-1),
+          height: (value - 3)*(-1),
+          fill: color,
+        });
+        this._layerField.add(food); 
       },
 
       _DrawBrick(value, keys, color, x, y, w, h) {
-        this._ctx.fillStyle = color;
-        this._ctx.fillRect( x + keys[0][value - 1] * w,
-                            y + keys[1][value - 1] * h,
-                            w * keys[2][value - 1],
-                            h * keys[3][value - 1]);
+        let brick = new Konva.Rect({
+          x: x + keys[0][value - 1] * w,
+          y: y + keys[1][value - 1] * h,
+          width:  w * keys[2][value - 1],
+          height: h * keys[3][value - 1],
+          fill: color,
+        });
+        this._layerField.add(brick); 
       },
 
       _DrawCell(data, value, i, j) {
@@ -293,56 +298,19 @@
       },
 
       _SplitDraw(text, size, s, color, x, y, delta) {
-        this._ctx.fillStyle = color;
-        this._ctx.textAlign = "center";
-        let fontArgs = this._ctx.font.split(' ');
-        this._ctx.font = "bold " + size + "px" + ' ' +  fontArgs[fontArgs.length - 1];
         let textArr = text.split(s);
         for (let i = 0; i < textArr.length; ++i) {
-          this._ctx.fillText(textArr[i], x, y + i * delta);
+          var textPart = new Konva.Text({
+            x: x - (text.length * size) / 2,
+            y: y + i * delta,
+            text: textArr[i],
+            fontSize: size,            
+            align: "center",
+            fill: color,
+            width: text.length * size
+          });
+          this._layerField.add(textPart); 
         }
-      },
-
-      _AddLeadingZeros :function (num, totalLength) {
-        return String(num).padStart(totalLength, '0');
-      },
-
-      DrawField(data) {
-        this._ctx.fillStyle = data.color.background;
-        this._ctx.fillRect(0, 0, data.width, data.height);
-
-        for (let j = 0; j < data.map.length; ++j) {
-          for (let i = 0; i < data.map[j].length; ++i) {
-            this._DrawCell(data, data.map[j][i], i, j);
-          }
-        }
-/*
-        this._ctx.beginPath();
-        this._ctx.fillStyle="yellow";
-        this._ctx.arc(210, 80, 50, 0, Math.PI*2, true);
-        this._ctx.fill();
-        this._ctx.save();
-
-        setTimeout(() => {  console.log("World!"); }, 2000);
-
-        this._ctx.beginPath();
-        this._ctx.fillStyle="red";
-        this._ctx.arc(10, 80, 50, 0, Math.PI*2, true);
-        this._ctx.fill();
-
-        setTimeout(() => {  console.log("World!"); }, 2000);
-
-
-        this._ctx.restore();
-/*
-        function restore (x) {
-          x.fillStyle = "black";
-          x.fillRect(1, 1, 200, 200);
-          x;
-          console.log(x);
-        };
-        setTimeout(restore, 500, this._ctx);*/
-
       },
 
       _DrawScore(data) {
@@ -359,7 +327,37 @@
      
       },
 
-      DrawLeftSidebar(sidebar, pacman) {
+      _AddLeadingZeros :function (num, totalLength) {
+        return String(num).padStart(totalLength, '0');
+      },
+
+      SetStage(id, width, height) {
+        this._stage = new Konva.Stage({
+          container: id,
+          width: width,
+          height: height
+        });
+      },
+
+      DrawField(data) {
+        this._layerField = new Konva.Layer();
+        let background = new Konva.Rect({
+          x: 0,
+          y: 0,
+          width: data.width,
+          height: data.height,
+          fill: data.color.background
+        });
+        this._layerField.add(background); 
+
+        for (let j = 0; j < data.map.length; ++j) {
+          for (let i = 0; i < data.map[j].length; ++i) {
+            this._DrawCell(data, data.map[j][i], i, j);
+          }
+        }
+      },
+
+      DrawLeftSidebar(sidebar) {
         this._SplitDraw(this._AddLeadingZeros(sidebar.text, sidebar.length),
                         sidebar.size, " ", sidebar.color.text,
                         sidebar.x, sidebar.y, sidebar.leading);
@@ -380,10 +378,13 @@
 
       Draw(data) {
         this.DrawField(data);
-        this.DrawLeftSidebar(data.leftSidebar, data.pacman);
+        this.DrawLeftSidebar(data.leftSidebar);
         this.DrawRightSidebar(data.rightSidebar);
+        this._stage.add(this._layerField);
       }
     };
+
+    IO.SetStage(id, width, height);
     return IO;
   }
 
@@ -421,7 +422,9 @@
       else console.log("Game is not initialized!");
     }
   }
+
+  const CANVAS_ID = "canvas"
   let data = GetDataFromLocalJS();
-  game.Initialize(GetIO(data.width, data.height), data);
+  game.Initialize(GetIO(CANVAS_ID, data.width, data.height), data);
   game.Start();
 })();
