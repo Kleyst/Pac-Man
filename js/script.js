@@ -1,430 +1,235 @@
-/*(function () {
-  let field = {
-    w: 640,
-    h: 480,
-    fieldX: 100,
-    fieldY: 30,
-    colorB: "black",      // background color
-    colorW: "#332B99",    // wall color
-    colorF: "Yellow",     // food color
-    ghosts: ["red", "blue", "pink", "orange"],
-    cherries: 3,
-    cellW: 16,            // even number!!!
-    cellH: 14,            // even number!!!
-    pacmanSize: 10,
-    pacmanColor: "Yellow",
-    pacmanX: 0,
-    pacmanY: 0,
-    value: [
-      [ 9, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 9 ],         //   1 | 2 | 3
-      [ 4,-5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,-5, 8 ],         //   --------- 
-      [ 4, 0, 1, 2, 2, 3, 0, 1, 2, 2, 2, 3, 0, 8, 4, 0, 1, 2, 2, 2, 3, 0, 1, 2, 2, 3, 0, 8 ],         //   8 |   | 4
-      [ 4, 0, 7, 6, 6, 5, 0, 7, 6, 6, 6, 5, 0, 7, 5, 0, 7, 6, 6, 6, 5, 0, 7, 6, 6, 5, 0, 8 ],         //   ---------
-      [ 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8 ],         //   7 | 6 | 5
-      [ 4, 0, 1, 2, 2, 3, 0, 1, 3, 0, 1, 2, 2, 2, 2, 2, 2, 3, 0, 1, 3, 0, 1, 2, 2, 3, 0, 8 ],
-      [ 4, 0, 7, 6, 6, 5, 0, 8, 4, 0, 7, 6, 6, 6, 6, 6, 6, 5, 0, 8, 4, 0, 7, 6, 6, 5, 0, 8 ],         //   /\ /\ /\
-      [ 4, 0, 0, 0, 0, 0, 0, 8, 4, 0, 0, 0, 0, 8, 4, 0, 0, 0, 0, 8, 4, 0, 0, 0, 0, 0, 0, 8 ],         //   || || ||
-      [ 4, 2, 2, 2, 2, 3, 0, 8, 4, 2, 2, 3, 0, 8, 4, 0, 1, 2, 2, 8, 4, 0, 1, 2, 2, 2, 2, 8 ],         //   Scheme to create thin borders
-      [ 9, 9, 9, 9, 9, 4, 0, 8, 4, 6, 6, 5, 0, 7, 5, 0, 7, 6, 6, 8, 4, 0, 8, 9, 9, 9, 9, 9 ],         //  
-      [ 9, 9, 9, 9, 9, 4, 0, 8, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 4, 0, 8, 9, 9, 9, 9, 9 ],         //  other codes: meanings
-      [ 9, 9, 9, 9, 9, 4, 0, 8, 4, 0, 1, 2, 2, 2, 2, 2, 2, 3, 0, 8, 4, 0, 8, 9, 9, 9, 9, 9 ],         //  9: empty cell,
-      [ 6, 6, 6, 6, 6, 5, 0, 7, 5, 0, 8, 9, 9, 9, 9, 9, 9, 4, 0, 7, 5, 0, 7, 6, 6, 6, 6, 6,],         //  0: small food 
-      [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 9, 9, 9, 9, 9, 9, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],         // -5: big food
-      [ 2, 2, 2, 2, 2, 3, 0, 1, 3, 0, 8, 9, 9, 9, 9, 9, 9, 4, 0, 1, 3, 0, 1, 2, 2, 2, 2, 2,],         // -9: Pacman
-      [ 9, 9, 9, 9, 9, 4, 0, 8, 4, 0, 7, 6, 6, 6, 6, 6, 6, 5, 0, 8, 4, 0, 8, 9, 9, 9, 9, 9 ],         
-      [ 9, 9, 9, 9, 9, 4, 0, 8, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 4, 0, 8, 9, 9, 9, 9, 9 ],
-      [ 9, 9, 9, 9, 9, 4, 0, 8, 4, 0, 1, 2, 2, 2, 2, 2, 2, 3, 0, 8, 4, 0, 8, 9, 9, 9, 9, 9 ],
-      [ 4, 6, 6, 6, 6, 5, 0, 7, 5, 0, 7, 6, 6, 6, 6, 6, 6, 5, 0, 7, 5, 0, 7, 6, 6, 6, 6, 8 ],
-      [ 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8 ],
-      [ 4, 0, 1, 2, 2, 3, 0, 1, 2, 2, 2, 3, 0, 8, 4, 0, 1, 2, 2, 2, 3, 0, 1, 2, 2, 3, 0, 8 ],
-      [ 4, 0, 7, 6, 6, 5, 0, 7, 6, 6, 6, 5, 0, 7, 5, 0, 7, 6, 6, 6, 5, 0, 7, 6, 6, 5, 0, 8 ],
-      [ 4, 0, 0, 0, 8, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 4, 0, 0, 0, 8 ],
-      [ 4, 2, 3, 0, 8, 4, 0, 1, 3, 0, 1, 2, 2, 2, 2, 2, 2, 3, 0, 1, 3, 0, 8, 4, 0, 1, 2, 8 ],
-      [ 4, 6, 5, 0, 7, 5, 0, 8, 4, 0, 7, 6, 6, 6, 6, 6, 6, 5, 0, 8, 4, 0, 7, 5, 0, 7, 6, 8 ],
-      [ 4, 0, 0, 0, 0, 0, 0, 8, 4, 0, 0, 0, 0, 8, 4, 0, 0, 0, 0, 8, 4, 0, 0, 0, 0, 0, 0, 8 ],
-      [ 4, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 3, 0, 8, 4, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 3, 0, 8 ],
-      [ 4, 0, 7, 6, 6, 6, 6, 6, 6, 6, 6, 5, 0, 7, 5, 0, 7, 6, 6, 6, 6, 6, 6, 6, 6, 5, 0, 8 ],
-      [ 4,-5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,-9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,-5, 8 ],
-      [ 9, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 9 ],
-    ],
-    drawField: function() {
-      ctx.fillStyle = field.colorB;
-      ctx.fillRect(0, 0, this.w, this.h);
-      this.info.drawInfo();
-
-      let arrX0 = [1, 0, 0, 0, 0, 0, 1, 1, 0];
-      let arrY0 = [1, 1, 1, 0, 0, 0, 0, 0, 0];
-      let arrX1 = [1, 2, 1, 1, 1, 2, 1, 1, 0];
-      let arrY1 = [1, 1, 1, 2, 1, 1, 1, 2, 0];
-
-      for (let i = 0; i < this.value.length; ++i) {
-        for (let j = 0; j < this.value[i].length; ++j) {
-          let x = this.fieldX +  j * this.cellW;
-          let y = this.fieldY +  i * this.cellH;
-
-          if (this.value[i][j] > 0) {
-            ctx.beginPath()
-            ctx.fillStyle = this.colorW;
-            ctx.rect( x + arrX0[this.value[i][j] - 1] * this.cellW / 2,
-                      y + arrY0[this.value[i][j] - 1] * this.cellH / 2,
-                      this.cellW / 2   * arrX1[this.value[i][j] - 1],
-                      this.cellH / 2   * arrY1[this.value[i][j] - 1]);
-            ctx.fill();
-          }
-          else if (this.value[i][j] != -9) {
-            ctx.beginPath()
-            ctx.fillStyle = this.colorF;
-            ctx.rect( x + this.cellW / 2  - (this.value[i][j] - 1)*(-1) / 2,
-                      y + this.cellH / 2 - (this.value[i][j] - 1)*(-1) / 2, 
-                      (this.value[i][j] - 3)*(-1),
-                      (this.value[i][j] - 3)*(-1));
-            ctx.fill();
-          }
-          else {
-            this.pacmanX = j;
-            this.pacmanY = i;
-            this.drawPacman();
-          }
-        }
-      }
-    },
-    info: {
-      xGS: 35,
-      yGS: 30,
-      xHS: 605,
-      yHS: 30,
-      deltaB: 35,
-      deltaY: 16,
-      textGS: "GAME SCORE",
-      textHS: "HIGH SCORE",
-      valueGS: 0,
-      valueHS: 1000,
-      valueLength: 5,
-      size: 15,
-      colorText: "pink",
-      colorValue: "white",
-      colorB: "black", // the same as colorB in field
-      font: "Arial",
-      fontSize: "16px",
-      ghost: 100,
-      cherry: 500,
-      pointS: 1,
-      pointB: 10,
-      highScore: 1000,
-      lives: 3,
-      deltaL: 40,
-      livesX: 30,
-      livesY: 440,
-      livesSize: 10,
-      livesColor: "yellow",
-      _addLeadingZeros :function (num, totalLength) {
-        return String(num).padStart(totalLength, '0');
-      },
-      _drawLives: function(x, y, delta, size, color, count) {
-        for (let i = 0; i < count; ++i) {
-          ctx.beginPath();
-          ctx.fillStyle = color;
-          ctx.arc(x, y - delta * i, size, 0.85* Math.PI, 1.9* Math.PI);
-          ctx.fill();
-          ctx.beginPath();
-          ctx.fillStyle = color;
-          ctx.arc(x, y - delta * i, size, 0.15* Math.PI, 1.1* Math.PI);
-          ctx.fill();
-        }
-      },
-      _splitDraw: function (text, size, s, color, x, y, delta) {
-        console.log(text);
-        ctx.fillStyle = color;
-        ctx.textAlign = "center";
-        let fontArgs = ctx.font.split(' ');
-        ctx.font = "bold " + size + "px" + ' ' +  fontArgs[fontArgs.length - 1];
-        let textArr = text.split(s);
-        for (let i = 0; i < textArr.length; ++i) {
-          ctx.fillText(textArr[i], x, y + i * delta);
-        }
-      },
-      drawInfo: function() {
-        this._splitDraw(this.textGS, this.size, " ", this.colorText, this.xGS, this.yGS, this.deltaY);
-        this._splitDraw(this._addLeadingZeros(this.valueGS, this.valueLength), this.size, "", this.colorValue, this.xGS, this.yGS + this.deltaB, this.deltaY);
-        this._splitDraw(this.textHS, this.size, " ", this.colorText, this.xHS, this.yHS, this.deltaY);
-        this._splitDraw(this._addLeadingZeros(this.valueHS, this.valueLength), this.size, "", this.colorValue, this.xHS, this.yHS + this.deltaB, this.deltaY);
-        this._drawLives(this.livesX, this.livesY, this.deltaL, this.size, this.livesColor, this.lives);
-      },
-      addScore: function(value) {
-        this._eraseScore();
-        if (value == 0) {
-          this._splitDraw(this._addLeadingZeros(this.valueGS+=this.pointS, this.valueLength), this.size, "", this.colorValue, this.xGS, this.yGS + this.deltaB, this.deltaY);
-        } else if (value == -5) {
-          this._splitDraw(this._addLeadingZeros(this.valueGS+=this.pointB, this.valueLength), this.size, "", this.colorValue, this.xGS, this.yGS + this.deltaB, this.deltaY);
-        }
-      },
-      _eraseScore () {
-        ctx.fillStyle = this.colorB;
-        ctx.rect( this.xGS - this.size, this.yGS + this.deltaB - this.size,  this.size * 2,this.valueLength * (this.size + this.deltaY));
-        ctx.fill();
-      }
-    },
-    drawPacman: function() {
-      let x = this.fieldX + this.pacmanX * this.cellW;
-      let y = this.fieldY + this.pacmanY * this.cellH;
-      this.info._drawLives(x + this.cellW / 2, y + this.cellH / 2, 0, this.pacmanSize, this.pacmanColor, 1);
-    },
-    _erasePacman() {
-      let x = this.fieldX + this.pacmanX * this.cellW;
-      let y = this.fieldY + this.pacmanY * this.cellH;
-      ctx.beginPath();
-      ctx.fillStyle = this.colorB;
-      ctx.arc(x + this.cellW / 2, y + this.cellH / 2, this.pacmanSize + 1, 0, 2 * Math.PI);
-      ctx.fill();
-    }
-  };
-
-  const canvas = document.getElementById("canvas");
-  canvas.width = field.w;
-  canvas.height = field.h;
-  let ctx = canvas.getContext("2d");
-  field.drawField(field.colorW);
-  document.addEventListener('keydown', (e) => {
-    const keyName = e.code;
-    switch (keyName) {
-      case "ArrowLeft":
-        if (field.pacmanX - 1 < 0) {
-          field._erasePacman();
-          field.pacmanX = field.value[0].length - 1;
-          field.info.addScore(field.value[field.pacmanY][field.pacmanX - 1]);
-          field.drawPacman();
-        } else if (field.value[field.pacmanY][field.pacmanX - 1] < 1 || field.value[field.pacmanY][field.pacmanX - 1] == 9) {
-          if (field.value[field.pacmanY][field.pacmanX - 1] == 0) {
-            field.info.addScore(field.value[field.pacmanY][field.pacmanX - 1]);
-          } else if (field.value[field.pacmanY][field.pacmanX - 1] == -5) {
-            field.info.addScore(field.value[field.pacmanY][field.pacmanX - 1]);
-          }
-          field.value[field.pacmanY][field.pacmanX] = 9;
-          field.value[field.pacmanY][field.pacmanX - 1] = -9;
-          field._erasePacman();
-          --field.pacmanX;
-          field.drawPacman();
-        }
-        break;
-      case "ArrowUp":
-        if (field.value[field.pacmanY - 1][field.pacmanX] < 1 || field.value[field.pacmanY - 1][field.pacmanX] == 9) {
-          field.value[field.pacmanY][field.pacmanX] = 9;
-          field.value[field.pacmanY - 1][field.pacmanX] = -9;
-          field._erasePacman();
-          --field.pacmanY;
-          field.drawPacman();
-        }
-        break;
-      case "ArrowRight":
-        if (field.pacmanX + 1 > field.value[0].length - 1) {
-          field._erasePacman();
-          field.pacmanX = 0;
-          field.drawPacman();
-        } else if (field.value[field.pacmanY][field.pacmanX + 1] < 1 || field.value[field.pacmanY][field.pacmanX + 1] == 9) {
-          field.value[field.pacmanY][field.pacmanX] = 9;
-          field.value[field.pacmanY][field.pacmanX + 1] = -9;
-          field._erasePacman();
-          ++field.pacmanX;
-          field.drawPacman();
-        }
-        break;
-      case "ArrowDown":
-        if (field.value[field.pacmanY + 1][field.pacmanX] < 1 || field.value[field.pacmanY + 1][field.pacmanX] == 9) {
-          field.value[field.pacmanY][field.pacmanX] = 9;
-          field.value[field.pacmanY + 1][field.pacmanX] = -9;
-          field._erasePacman();
-          ++field.pacmanY;
-          field.drawPacman();
-        }
-        break;
-   }
-  });
-})();*/
 (function () {
-
-  function GetIO(id, width, height) {
-    const IO = {
-      _stage: null,
-      _layerField: null,
-
-      _DrawPacman(size, color, x, y) {
-        var arc = new Konva.Arc({
-          x: x,
-          y: y,
-          outerRadius: 10,
-          angle: 320,
-          rotation: 20,
-          fill: color,
-        });
-        this._layerField.add(arc);
-      },
-
-      _DrawFood (value, color, x, y, w, h) {
-        let food = new Konva.Rect({
-          x: x + w - (value - 1)*(-1) / 2,
-          y: y + h - (value - 1)*(-1) / 2,
-          width: (value - 3)*(-1),
-          height: (value - 3)*(-1),
-          fill: color,
-        });
-        this._layerField.add(food); 
-      },
-
-      _DrawBrick(value, keys, color, x, y, w, h) {
-        let brick = new Konva.Rect({
-          x: x + keys[0][value - 1] * w,
-          y: y + keys[1][value - 1] * h,
-          width:  w * keys[2][value - 1],
-          height: h * keys[3][value - 1],
-          fill: color,
-        });
-        this._layerField.add(brick); 
-      },
-
-      _DrawCell(data, value, i, j) {
-        let x = data.x + i * data.cell.halfWidth * 2;
-        let y = data.y + j * data.cell.halfHeight * 2;
-        let w = data.cell.halfWidth;
-        let h = data.cell.halfHeight;
-        if (value > 0) {
-          this._DrawBrick(value, data.keys, data.color.wall, x, y, w, h)
-        }
-        else if (value != -9) {
-          this._DrawFood(value, data.color.food, x, y, w, h);
-        }
-        else {
-          this._DrawPacman(data.pacman.size, data.pacman.color, x + w, y + h);
-        }
-      },
-
-      _SplitDraw(text, size, s, color, x, y, delta) {
-        let textArr = text.split(s);
-        for (let i = 0; i < textArr.length; ++i) {
-          var textPart = new Konva.Text({
-            x: x - (text.length * size) / 2,
-            y: y + i * delta,
-            text: textArr[i],
-            fontSize: size,            
-            align: "center",
-            fill: color,
-            width: text.length * size
-          });
-          this._layerField.add(textPart); 
-        }
-      },
-
-      _DrawScore(data) {
-     
-      },
-
-      _DrawLives(lives) {
-        for (let i = 0; i < lives.count; ++i) {
-          this._DrawPacman(lives.size, lives.color, lives.x, lives.y + i * lives.leading);
-        }
-      },
-
-      _DrawGhost(data) {
-     
-      },
-
-      _AddLeadingZeros :function (num, totalLength) {
-        return String(num).padStart(totalLength, '0');
-      },
-
-      SetStage(id, width, height) {
-        this._stage = new Konva.Stage({
-          container: id,
-          width: width,
-          height: height
-        });
-      },
-
-      DrawField(data) {
-        this._layerField = new Konva.Layer();
-        let background = new Konva.Rect({
-          x: 0,
-          y: 0,
-          width: data.width,
-          height: data.height,
-          fill: data.color.background
-        });
-        this._layerField.add(background); 
-
-        for (let j = 0; j < data.map.length; ++j) {
-          for (let i = 0; i < data.map[j].length; ++i) {
-            this._DrawCell(data, data.map[j][i], i, j);
-          }
-        }
-      },
-
-      DrawLeftSidebar(sidebar) {
-        this._SplitDraw(this._AddLeadingZeros(sidebar.text, sidebar.length),
-                        sidebar.size, " ", sidebar.color.text,
-                        sidebar.x, sidebar.y, sidebar.leading);
-        this._SplitDraw(this._AddLeadingZeros(sidebar.value, sidebar.length),
-                        sidebar.size, "", sidebar.color.value,
-                        sidebar.x, sidebar.y + sidebar.textBottomMargin, sidebar.leading);
-        this._DrawLives(sidebar.lives);
-      },
-
-      DrawRightSidebar(sidebar) {
-        this._SplitDraw(this._AddLeadingZeros(sidebar.text, sidebar.length),
-                        sidebar.size, " ", sidebar.color.text,
-                        sidebar.x, sidebar.y, sidebar.leading);
-        this._SplitDraw(this._AddLeadingZeros(sidebar.value, sidebar.length),
-                        sidebar.size, "", sidebar.color.value,
-                        sidebar.x, sidebar.y + sidebar.textBottomMargin, sidebar.leading);
-      },
-
-      Draw(data) {
-        this.DrawField(data);
-        this.DrawLeftSidebar(data.leftSidebar);
-        this.DrawRightSidebar(data.rightSidebar);
-        this._stage.add(this._layerField);
-      }
-    };
-
-    IO.SetStage(id, width, height);
-    return IO;
-  }
-
   const game = {
+
+    // underlined data is private
+
+
+    ///////////////////////////////////////////
+    //               FIELDS
+    ///////////////////////////////////////////
+
+
+    _CANVAS_ID: "canvas",
     _data: null,
-    _IO: null,
+    _stage: null,
+    _layerField: null,
     _pacman: {
-      _Start() {
+      Start() {
 
       }
     },
-    Initialize(IO, data) {
-      this._IO = IO;
+
+
+    ///////////////////////////////////////////
+    //              METHODS
+    ///////////////////////////////////////////
+
+
+    //-----------------------------------------
+    // Field drawing methods
+    //-----------------------------------------
+
+    // Draws background than calls method
+    // for every cell from data.map
+
+    DrawField() {
+      let d = this._data;
+      this._layerField = new Konva.Layer();
+      let background = new Konva.Rect({
+        x: 0,
+        y: 0,
+        width: d.width,
+        height: d.height,
+        fill: d.color.background
+      });
+      this._layerField.add(background); 
+      for (let j = 0; j < d.map.length; ++j) {
+        for (let i = 0; i < d.map[j].length; ++i) {
+          this._DrawCell(d.map[j][i], i, j);
+        }
+      }
+    },
+
+    // Ccounts coords and measurements
+    // of one cell from map
+    // calles  specific method depending on cell value
+
+    _DrawCell(value, i, j) {
+      let d = this._data;
+      let x = d.x + i * d.cell.halfWidth * 2;
+      let y = d.y + j * d.cell.halfHeight * 2;
+      let w = d.cell.halfWidth;
+      let h = d.cell.halfHeight;
+      if (value > 0) {
+        this._DrawBrick(value, d.keys, d.color.wall, x, y, w, h);
+      }
+      else if (value != -9) {
+        this._DrawFood(value, data.color.food, x, y, w, h);
+      }
+      else {
+        this._DrawPacman(data.pacman.color, x + w, y + h);
+      }
+    },
+    
+    // Draws brick of wall, bricks is half thinner than
+    // in map from data.map, every brick has special value and
+    // there are 4 arrays of keys for counting coords
+
+    _DrawBrick(value, keys, color, x, y, w, h) {
+      let brick = new Konva.Rect({
+        x: x + keys[0][value - 1] * w,
+        y: y + keys[1][value - 1] * h,
+        width:  w * keys[2][value - 1],
+        height: h * keys[3][value - 1],
+        fill: color,
+      });
+      this._layerField.add(brick); 
+    },
+
+    // Draws Food, size can be changed from data.map 
+
+    _DrawFood (value, color, x, y, w, h) {
+      let food = new Konva.Rect({
+        x: x + w - (value - 1)*(-1) / 2,
+        y: y + h - (value - 1)*(-1) / 2,
+        width: (value - 3)*(-1),
+        height: (value - 3)*(-1),
+        fill: color,
+      });
+      this._layerField.add(food); 
+    },
+    
+    // Draws Pacman, values is specified
+    // for pacman only
+
+    _DrawPacman(color, x, y) {
+      let d = this._data.pacman;
+      var arc = new Konva.Arc({
+        x: x,
+        y: y,
+        outerRadius: d.outerRadius,
+        angle: d.angle,
+        rotation: d.rotation,
+        fill: color,
+      });
+      this._layerField.add(arc);
+    },
+
+    // Split text and draw it on new line, 
+    // s is separator, delta is vertical align
+ 
+    _SplitDraw(text, size, s, color, x, y, delta) {
+      let textArr = text.split(s);
+      for (let i = 0; i < textArr.length; ++i) {
+        var textPart = new Konva.Text({
+          x: x - (text.length * size) / 2,
+          y: y + i * delta,
+          text: textArr[i],
+          fontSize: size,            
+          align: "center",
+          fill: color,
+          width: text.length * size
+        });
+        this._layerField.add(textPart); 
+      }
+    },
+
+    //-----------------------------------------
+    // Sidebar drawing methods
+    //-----------------------------------------
+
+    DrawLeftSidebar() {
+      let sidebar = this._data.leftSidebar;
+      this._SplitDraw(sidebar.text,
+                      sidebar.size, " ", sidebar.color.text,
+                      sidebar.x, sidebar.y, sidebar.leading);
+      this._SplitDraw(this._AddLeadingZeros(sidebar.value, sidebar.length),
+                      sidebar.size, "", sidebar.color.value,
+                      sidebar.x, sidebar.y + sidebar.textBottomMargin, sidebar.leading);
+      this._DrawLives(sidebar.lives);
+    },
+
+    DrawRightSidebar() {
+      let sidebar = this._data.rightSidebar;
+      this._SplitDraw(sidebar.text,
+                      sidebar.size, " ", sidebar.color.text,
+                      sidebar.x, sidebar.y, sidebar.leading);
+      this._SplitDraw(this._AddLeadingZeros(sidebar.value, sidebar.length),
+                      sidebar.size, "", sidebar.color.value,
+                      sidebar.x, sidebar.y + sidebar.textBottomMargin, sidebar.leading);
+    },
+
+    // Method for drawing pacman images as lives
+
+    _DrawLives(lives) {
+      for (let i = 0; i < lives.count; ++i) {
+        this._DrawPacman(lives.color, lives.x, lives.y + i * lives.leading);
+      }
+    },
+
+    // Add leadind zeros if number is smaller
+    // than needed length in symbols
+
+    _AddLeadingZeros :function (num, totalLength) {
+      return String(num).padStart(totalLength, '0');
+    },
+
+    //-----------------------------------------
+    // Main methods
+    //-----------------------------------------
+
+    Initialize(data) {
       this._data = data;
+      this._SetStage();
     },
+
     IsInitialized() {
-      return (this._IO != null) & (this._data != null) ? true : false;
+      return this._data != null ? true : false;
     },
+
+    // Set main and only stage in the game
+    // to add different layers to it later
+
+    _SetStage() {
+      let d = this._data;
+      this._stage = new Konva.Stage({
+        container: this._CANVAS_ID,
+        width: d.width,
+        height: d.height
+      });
+    },
+
+    DrawGame() {
+      this.DrawField();
+      this.DrawLeftSidebar();
+      this.DrawRightSidebar();
+      this._stage.add(this._layerField);
+    },
+
     Start() {
       if(this.IsInitialized()) {
-        this._IO.Draw(this._data);
+        this.DrawGame();
       }
       else console.log("Game is not initialized!");
     },
+
     Pause() {
       if(this.IsInitialized()) {
 
       }
       else console.log("Game is not initialized!");
     },
+
     Reset() {
       if(this.IsInitialized()) {
 
       }
       else console.log("Game is not initialized!");
     }
+
   }
 
-  const CANVAS_ID = "canvas"
   let data = GetDataFromLocalJS();
-  game.Initialize(GetIO(CANVAS_ID, data.width, data.height), data);
+  game.Initialize(data);
   game.Start();
 })();
